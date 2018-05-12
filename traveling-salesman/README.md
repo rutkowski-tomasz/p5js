@@ -3,10 +3,10 @@ Genetic algorithm solution to traveling salesperson problem. Implemented in Java
 
 # Presentation
 TSP on Knn graph.
-<img src="https://github.com/tomejzen/p5js-traveling-salesman/blob/master/knn.gif?raw=true" />
+<img src="https://github.com/tomejzen/p5js/blob/master/traveling-salesman/knn.gif?raw=true" />
 
 TSP on double circle graph.
-<img src="https://github.com/tomejzen/p5js-traveling-salesman/blob/master/dcircle.gif?raw=true" />
+<img src="https://github.com/tomejzen/p5js/blob/master/traveling-salesman/dcircle.gif?raw=true" />
 
 TSP on random graph.
-<img src="https://github.com/tomejzen/p5js-traveling-salesman/blob/master/random.gif?raw=true" />
+<img src="https://github.com/tomejzen/p5js/blob/master/traveling-salesman/random.gif?raw=true" />
