@@ -105,6 +105,39 @@ class Grid {
             this.points[i*2+1] = createVector(x, y);
         }
     }
+    loadFortniteLoot() {
+
+        this.reset();
+        var gridRef = this;
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+
+                var data = JSON.parse(this.responseText);
+                var chestsLoaded = 0;
+
+                for(var i = 0; i < data.length; i++)
+                {
+                    var marker = data[i];
+
+                    if(marker.type != 'loot')
+                        continue;
+                    
+                    var x = WIDTH * (marker.coordinates[0] / 2000);
+                    var y = HEIGHT - (HEIGHT * (marker.coordinates[1] / 2000));
+                    gridRef.points[chestsLoaded] = createVector(x, y);
+
+                    chestsLoaded += 1;
+                }
+            }
+        };
+        xhttp.open("GET", "http://www.fortnitechests.info/api/markers", true);
+        xhttp.send();
+
+        
+    }
+
 
     initializePopulation() {
 

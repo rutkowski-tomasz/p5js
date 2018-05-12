@@ -1,5 +1,5 @@
 WIDTH = 1000;
-HEIGHT = 600;
+HEIGHT = 1000;
 CHARTHEIGHT = 300;
 var cnv;
 var grid;
@@ -13,6 +13,8 @@ var circleButton;
 var doubleCircleButton;
 var randomButton;
 var knnButton;
+var fortniteLootButton;
+var clusterButton;
 
 function setup() {
 
@@ -48,6 +50,12 @@ function setup() {
     knnButton.mouseClicked(function() {
         grid.loadKnn();
     });
+
+    fortniteLootButton = createButton("Load fortnite map");
+    fortniteLootButton.mouseClicked(function() {
+        grid.loadFortniteLoot();
+    });
+
 
     generationP = createP();
     generationSlider = createSlider(0, 20000, 500);
