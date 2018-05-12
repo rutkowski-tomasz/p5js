@@ -341,6 +341,7 @@ class Grid {
             line(startX, startY, endX, endY);
         }
     }
+    
 }
 
 function permutation(size) {

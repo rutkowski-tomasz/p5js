@@ -15,6 +15,8 @@ var randomButton;
 var knnButton;
 var fortniteLootButton;
 var clusterButton;
+var kmeans;
+var means;
 
 function setup() {
 
@@ -25,6 +27,7 @@ function setup() {
     });
 
     grid = new Grid();
+    kmeans = new Kmeans();
 
     startButton = createButton("Start algorithm");
     startButton.mouseClicked(function() {
@@ -56,6 +59,10 @@ function setup() {
         grid.loadFortniteLoot();
     });
 
+    clusterButton = createButton("Split points to clusters");
+    clusterButton.mouseClicked(function() {
+        means = kmeans.clusterize(grid.points, kmeansCountSlider.value());
+    });
 
     generationP = createP();
     generationSlider = createSlider(0, 20000, 500);
@@ -74,6 +81,9 @@ function setup() {
 
     moveProbabilityP = createP();
     moveProbabilitySlider = createSlider(0, 100, 20);
+
+    kmeansCountP = createP();
+    kmeansCountSlider = createSlider(0, 100, 2);
 }
 
 function draw() {
@@ -93,6 +103,7 @@ function draw() {
 
     drawChart(50, HEIGHT + 10, WIDTH - 60, CHARTHEIGHT - 50);
     grid.drawCities();
+    kmeans.drawMeans();
 
     if(grid.working)
         grid.drawBestPath();
@@ -105,6 +116,7 @@ function draw() {
     swapProbabilityP.html("Swap probability: " + swapProbabilitySlider.value() + "%");
     inverseProbabilityP.html("Inverse probability: " + inverseProbabilitySlider.value() + "%");
     moveProbabilityP.html("Move probability: " + moveProbabilitySlider.value() + "%");
+    kmeansCountP.html("Kmeans count: " + kmeansCountSlider.value() + "");
 }
 
 function drawChart(offsetX, offsetY, chartWidth, chartHeight) {
