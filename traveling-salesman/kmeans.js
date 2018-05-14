@@ -7,147 +7,99 @@ class Kmeans {
 
     clusterize(data, meansCount) {
 
-        var convertedData = [];
-        for(var point of data)
-            convertedData.push([point.x, point.y]);
-
-        this.data = convertedData;
+        this.data = data;
         this.dataExtremes = this.getDataExtremes(this.data);
-        this.dataRange = this.getDataRanges(this.dataExtremes);
         this.means = this.initMeans(meansCount);
         this.colors = this.loadRandomColors(meansCount);
     
         this.assignments = this.makeAssignments();
 
-        var moved = true;
+        let moved = true;
         while(moved)
             moved = this.moveMeans();
 
         return this.means;
     }
-
-
-    getDataRanges(extremes) {
-
-        var ranges = [];
-        for (var dimension in extremes)
-            ranges[dimension] = extremes[dimension].max - extremes[dimension].min;
     
-        return ranges;
-    
-    }
-    
+    // Get max and min of each dimension
     getDataExtremes(points) {
     
-        var extremes = [];
-        for (var point of this.data)
+        let extremes = { xmin: Infinity, xmax: -Infinity, ymin: Infinity, ymax: -Infinity };
+
+        for (const point of this.data)
         {
-            for (var dimension in point)
-            {
-                if ( ! extremes[dimension] )
-                    extremes[dimension] = {min: Infinity, max: 0};
-    
-                if (point[dimension] < extremes[dimension].min)
-                    extremes[dimension].min = point[dimension];
-    
-                if (point[dimension] > extremes[dimension].max)
-                    extremes[dimension].max = point[dimension];
-            }
+            extremes.xmin = Math.min(extremes.xmin, point.x);
+            extremes.xmax = Math.max(extremes.xmax, point.x);
+
+            extremes.ymin = Math.min(extremes.ymin, point.y);
+            extremes.ymax = Math.max(extremes.ymax, point.y);
         }
     
         return extremes;
     }
     
+    // Randomly place k means
     initMeans(k) {
 
-        var means = [];
-        if ( ! k )
-            k = 3;
-    
-        while (k--) {
-            var mean = [];
-    
-            for (var dimension in this.dataExtremes)
-                mean[dimension] = this.dataExtremes[dimension].min + ( Math.random() * this.dataRange[dimension] );
-    
-            means.push(mean);
-        }
-    
-        return means;
+        return Array( k ).fill(null).map(() => ({
+            x: this.getRandomInt(this.dataExtremes.xmin, this.dataExtremes.xmax),
+            y: this.getRandomInt(this.dataExtremes.ymin, this.dataExtremes.ymax)
+        }));
     }
 
+    // Assign each point to closest mean
     makeAssignments() {
 
-        let assignments = [];
-        for (const point of this.data) {
+        let assignments = Array( this.data.length ).fill(-1);
 
-            var distances = [];
-            for (const mean of this.means) {
+        for (let pointIndex = 0; pointIndex < this.data.length; pointIndex++) {
 
-                var sum = 0;
-                for (var i = 0; i < point.length; i++)
-                    sum += Math.pow(point[i] - mean[i], 2);
-    
-                distances.push(sum);
-            }
-    
-            var closestCluster = distances.indexOf(Math.min(...distances));
-            assignments.push(closestCluster);
+            const distances = Array( this.means.length ).fill(Infinity).map((v, i) => 
+                Math.pow(this.data[pointIndex].x - this.means[i].x, 2) + Math.pow(this.data[pointIndex].y - this.means[i].y, 2)
+            );
+
+            // Find closest mean and assign current point to it
+            assignments[pointIndex] = distances.indexOf(Math.min(...distances));
         }
     
         return assignments;
     }
+
+    // Move means so it will be placed in average points position
     moveMeans() {
 
         this.makeAssignments();
     
-        var sums = Array( this.means.length );
-        var counts = Array( this.means.length );
-        var moved = false;
-    
-        for (var j in this.means)
+        let sums = Array( this.means.length ).fill(null).map(() => ({ x: 0, y: 0 }));
+        let counts = Array( this.means.length ).fill(0);
+        let moved = false;
+
+        for (let assignmentsIndex = 0; assignmentsIndex < this.assignments.length; assignmentsIndex++)
         {
-            counts[j] = 0;
-            sums[j] = Array( this.means[j].length );
-            for (var dimension in this.means[j])
-            {
-                sums[j][dimension] = 0;
-            }
+            const meanIndex = this.assignments[assignmentsIndex];
+            const point = this.data[assignmentsIndex];
+
+            counts[meanIndex]++;
+            sums[meanIndex].x += point.x;
+            sums[meanIndex].y += point.y;
         }
     
-        for (var point_index in this.assignments)
+        for (let meanIndex = 0; meanIndex < sums.length; meanIndex++)
         {
-            var mean_index = this.assignments[point_index];
-            var point = this.data[point_index];
-            var mean = this.means[mean_index];
-    
-            counts[mean_index]++;
-    
-            for (var dimension in mean)
-                sums[mean_index][dimension] += point[dimension];
-        }
-    
-        for (var mean_index in sums)
-        {
-            if ( 0 === counts[mean_index] ) 
+            if ( counts[meanIndex] === 0) 
             {
-                sums[mean_index] = this.means[mean_index];
-                console.log("Mean with no points");
-    
-                for (var dimension in this.dataExtremes)
-                    sums[mean_index][dimension] = this.dataExtremes[dimension].min + ( Math.random() * this.dataRange[dimension] );
-                    
+                sums[meanIndex].x = this.getRandomInt(this.dataExtremes.xmin, this.dataExtremes.xmax);
+                sums[meanIndex].y = this.getRandomInt(this.dataExtremes.ymin, this.dataExtremes.ymax);
+
                 continue;
             }
-    
-            for (var dimension in sums[mean_index])
-            {
-                sums[mean_index][dimension] /= counts[mean_index];
-            }
+            
+            sums[meanIndex].x /= counts[meanIndex];
+            sums[meanIndex].y /= counts[meanIndex];
+
+            if(this.means[meanIndex].x !== sums[meanIndex].x || this.means[meanIndex].y !== sums[meanIndex].y)
+                moved = true;
         }
-    
-        if (this.means.toString() !== sums.toString())
-            moved = true;
     
         this.means = sums;
         return moved;
@@ -158,46 +110,47 @@ class Kmeans {
      */
     drawMeans() {
 
-        if(this.means == null)
+        // Algorithm havent started yet
+        if(this.means === null)
             return;
 
-        for(var i = 0; i < this.means.length; i++) {
-
-            var x = this.means[i][0];
-            var y = this.means[i][1];
+        // Draw all mean centers
+        for(let i = 0; i < this.means.length; i++) {
 
             stroke(255);
             strokeWeight(1);
             fill(this.colors[i][0], this.colors[i][1], this.colors[i][2]);
 
-            ellipse(x, y, 10, 10);
+            ellipse(this.means[i].x, this.means[i].y, 10, 10);
         }
 
-        for(var i = 0; i < this.assignments.length; i++)
+        // Draw lines to each point that belongs to mean
+        for(let i = 0; i < this.assignments.length; i++)
         {
-            var meanIndex = this.assignments[i];
-
-            var startX = this.means[meanIndex][0];
-            var startY = this.means[meanIndex][1];
-            var endX = this.data[i][0];
-            var endY = this.data[i][1];
+            const meanIndex = this.assignments[i];
 
             stroke(this.colors[meanIndex][0], this.colors[meanIndex][1], this.colors[meanIndex][2]);
             strokeWeight(1);
-            line(startX, startY, endX, endY);
+            line(this.means[meanIndex].x, this.means[meanIndex].y, this.data[i].x, this.data[i].y);
         }
     }
+
+    /*
+     * Helper functions
+     */
     loadRandomColors(count) {
+        return Array( this.means.length ).fill(0).map(() => this.getRandomColor());
+    }
 
-        var colors = [];
-
-        for(var i = 0; i < count; i++)
-            colors[i] = [this.getRandomInt(0, 255), this.getRandomInt(0, 255), this.getRandomInt(0, 255)];
-
-        return colors;
+    getRandomColor() {
+        return [this.getRandomInt(0, 255), this.getRandomInt(0, 255), this.getRandomInt(0, 255)];
     }
 
     getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    
+    clearMeans() {
+        this.means = null;
     }
 }

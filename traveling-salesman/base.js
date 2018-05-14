@@ -17,17 +17,20 @@ var fortniteLootButton;
 var clusterButton;
 var kmeans;
 var means;
+var fortniteMapImage, drawFortniteMap = false;
 
 function setup() {
 
     // Create canvas
     cnv = createCanvas(WIDTH, HEIGHT + CHARTHEIGHT);
-    cnv.mouseClicked(function() {
-        grid.addPoint(mouseX, mouseY);
-    });
 
     grid = new Grid();
     kmeans = new Kmeans();
+
+    cnv.mouseClicked(function() {
+        grid.addPoint(mouseX, mouseY);
+        kmeans.clearMeans();
+    });
 
     startButton = createButton("Start algorithm");
     startButton.mouseClicked(function() {
@@ -36,27 +39,33 @@ function setup() {
 
     circleButton = createButton("Load circle");
     circleButton.mouseClicked(function() {
+        kmeans.clearMeans();
         grid.loadCircle();
     });
 
     doubleCircleButton = createButton("Load double circle");
     doubleCircleButton.mouseClicked(function() {
+        kmeans.clearMeans();
         grid.loadDoubleCircle()
     });
 
     randomButton = createButton("Load random");
     randomButton.mouseClicked(function() {
+        kmeans.clearMeans();
         grid.loadRandom();
     });
 
     knnButton = createButton("Load Knn");
     knnButton.mouseClicked(function() {
+        kmeans.clearMeans();
         grid.loadKnn();
     });
 
     fortniteLootButton = createButton("Load fortnite map");
     fortniteLootButton.mouseClicked(function() {
+        kmeans.clearMeans();
         grid.loadFortniteLoot();
+        drawFortniteMap = true;
     });
 
     clusterButton = createButton("Split points to clusters");
@@ -84,6 +93,9 @@ function setup() {
 
     kmeansCountP = createP();
     kmeansCountSlider = createSlider(0, 100, 2);
+
+    fortniteMapImage = createImg("S4Map.png");
+    fortniteMapImage.hide();
 }
 
 function draw() {
@@ -101,6 +113,9 @@ function draw() {
         grid.selectBestPath();
     }
 
+    if(drawFortniteMap)
+        image(fortniteMapImage, 0, 0, WIDTH, HEIGHT);
+
     drawChart(50, HEIGHT + 10, WIDTH - 60, CHARTHEIGHT - 50);
     grid.drawCities();
     kmeans.drawMeans();
@@ -110,6 +125,7 @@ function draw() {
 
     var p = Math.round(grid.generation / generationSlider.value() * 10000) / 100;
     generationP.html("Current generation: " + grid.generation + "/" + generationSlider.value() + " -> " + p + "% | Bestpath generation: " + grid.bestpathGeneration);
+
 
     citiesP.html("Cities: " + citiesSlider.value());
     populationP.html("Population: " + populationSlider.value());
